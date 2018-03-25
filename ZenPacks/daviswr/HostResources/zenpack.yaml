@@ -1,0 +1,132 @@
+name: ZenPacks.daviswr.HostResources
+
+device_classes:
+  /Server:
+    remove: no
+    templates:
+      DEFAULTS:
+        targetPythonClass: Products.ZenModel.Device
+
+      Host Resources CPU:
+        description: Overall processor utilization using HOST-RESOURCES-MIB
+        datasources:
+          hrProcessorLoad:
+            type: COMMAND
+            usessh: false
+            commandTemplate: "${here/ZenPackManager/packs/ZenPacks.daviswr.HostResources/path}/libexec/hostres_cpu.sh ${dev/manageIp} ${dev/zSnmpCommunity}"
+            parser: Nagios
+            cycletime: 60
+            component: CPU
+            datapoints:
+              #count: GAUGE
+              load:
+                description: "The average, over the last minute, of the percentage of time that this processor was not idle."
+                rrdtype: GAUGE
+                aliases:
+                  # Compatibility with Zenoss CPU Utilization report
+                  # https://monitoringartist.github.io/community.zenoss.org/docs/DOC-3025.html
+                  cpu_pct: "0,+"
+                  cpu__pct: "0,+"
+
+        graphs:
+          CPU Utilization:
+            height: 100
+            width: 500
+            units: percentage
+            miny: 0
+            maxy: 100
+            graphpoints:
+              Utilization:
+                dpName: hrProcessorLoad_load
+                lineType: AREA
+                stacked: true
+                format: "%5.2lf%%"
+                colorindex: 0
+
+      Host Resources Memory:
+        description: Memory and swap utilization using HOST-RESOURCES-MIB
+        datasources:
+          hrStorageEntry:
+            type: COMMAND
+            usessh: false
+            commandTemplate: "${here/ZenPackManager/packs/ZenPacks.daviswr.HostResources/path}/libexec/hostres_mem.sh ${dev/manageIp} ${dev/zSnmpCommunity}"
+            parser: Nagios
+            cycletime: 60
+            component: RAM
+            datapoints:
+              #physSize: GAUGE
+              physUsed:
+                rrdtype: GAUGE
+                aliases:
+                  usedMemory: "0,+"
+                  mem_pct: "${here/hw/totalMemory},+,${here/hw/totalMemory},/,100,*"
+              physFree:
+                rrdtype: GAUGE
+                aliases:
+                  freeMemory: "0,+"
+                  memoryAvailable__bytes: "0,+"
+                  memAvail__megabytes: "1024,/,1024,/"
+              #swapSize: GAUGE
+              swapUsed:
+                rrdtype: GAUGE
+              swapFree:
+                rrdtype: GAUGE
+
+        graphs:
+          DEFAULTS:
+            height: 100
+            width: 500
+            units: bytes
+            base: true
+            miny: 0
+          Memory:
+            graphpoints:
+              DEFAULTS:
+                lineType: AREA
+                stacked: true
+              Used:
+                dpName: hrStorageEntry_physUsed
+                colorindex: 0
+              Free:
+                dpName: hrStorageEntry_physFree
+                color: cccccc
+
+          Swap:
+            graphpoints:
+              DEFAULTS:
+                lineType: AREA
+                stacked: true
+              Used:
+                dpName: hrStorageEntry_swapUsed
+                colorindex: 0
+              Free:
+                dpName: hrStorageEntry_swapFree
+                color: cccccc
+
+
+      CPU:
+        description: Processor component utilization using HOST-RESOURCES-MIB
+        targetPythonClass: Products.ZenModel.CPU
+        datasources:
+          hrProcessorLoad:
+            type: SNMP
+            oid: .1.3.6.1.2.1.25.3.3.1.2
+            datapoints:
+              hrProcessorLoad:
+                description: "The average, over the last minute, of the percentage of time that this processor was not idle."
+                rrdtype: GAUGE
+
+        graphs:
+          Utilization:
+            height: 100
+            width: 500
+            units: percentage
+            miny: 0
+            maxy: 100
+            graphpoints:
+              Utilization:
+                dpName: hrProcessorLoad_hrProcessorLoad
+                lineType: AREA
+                stacked: true
+                format: "%5.2lf%%"
+                colorindex: 0
