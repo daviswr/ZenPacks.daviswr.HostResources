@@ -9,7 +9,7 @@ LICENSE = "MIT"
 NAMESPACE_PACKAGES = ['ZenPacks', 'ZenPacks.daviswr']
 PACKAGES = ['ZenPacks', 'ZenPacks.daviswr', 'ZenPacks.daviswr.HostResources']
 INSTALL_REQUIRES = ['ZenPacks.zenoss.ZenPackLib']
-COMPAT_ZENOSS_VERS = ">=4.2.5"
+COMPAT_ZENOSS_VERS = "==4.2.5"
 PREV_ZENPACK_NAME = ""
 # STOP_REPLACEMENTS
 ################################
